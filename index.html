@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SSI CRM – Smart Swift Innovations Pvt Ltd</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<style>
+:root {
+  --bg:       #f5f7fa;
+  --bg2:      #ffffff;
+  --bg3:      #f0f3f8;
+  --bg4:      #e8edf5;
+  --border:   #dde3ee;
+  --border2:  #c8d0e0;
+  --text1:    #0f1c2e;
+  --text2:    #4a5878;
+  --text3:    #8896b0;
+  --accent:   #2563eb;
+  --accent-l: #eff4ff;
+  --accent-b: #bfd0fd;
+  --green:    #059669;
+  --green-l:  #ecfdf5;
+  --green-b:  #a7f3d0;
+  --red:      #dc2626;
+  --red-l:    #fff1f2;
+  --red-b:    #fecaca;
+  --yellow:   #d97706;
+  --yellow-l: #fffbeb;
+  --yellow-b: #fde68a;
+  --purple:   #7c3aed;
+  --purple-l: #f5f3ff;
+  --orange:   #ea580c;
+  --orange-l: #fff7ed;
+  --sidebar-w: 236px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text1)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg3)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#a0aec0}
+
+/* ── LOGIN ── */
+#login-view{display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:linear-gradient(135deg,#eff4ff 0%,#f5f7fa 50%,#ecfdf5 100%)}
+.lcard{background:var(--bg2);border:1px solid var(--border);border-radius:22px;
+  padding:46px 40px;width:100%;max-width:400px;
+  box-shadow:0 4px 6px -1px #0000000a,0 20px 60px -12px #2563eb18,0 0 0 1px #ffffff80}
+.llogo{width:54px;height:54px;background:linear-gradient(135deg,#2563eb,#059669);
+  border-radius:15px;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:17px;color:#fff;margin:0 auto 18px;letter-spacing:-.5px;
+  box-shadow:0 8px 20px #2563eb30}
+
+/* ── INPUTS ── */
+.fi{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;
+  padding:10px 14px;color:var(--text1);font-size:13.5px;font-family:'Plus Jakarta Sans',sans-serif;
+  outline:none;transition:border .18s,box-shadow .18s,background .18s}
+.fi:focus{border-color:var(--accent);box-shadow:0 0 0 3px #2563eb15;background:var(--bg2)}
+.fi:hover:not(:focus){border-color:var(--border2)}
+.fi option{background:var(--bg2);color:var(--text1)}
+.fl{display:block;font-size:11px;font-weight:700;color:var(--text3);
+  margin-bottom:5px;letter-spacing:.07em;text-transform:uppercase}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:9px;
+  padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif;transition:all .18s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-p{background:#2563eb;color:#fff;box-shadow:0 2px 8px #2563eb30}
+.btn-p:hover{background:#1d4ed8;box-shadow:0 4px 14px #2563eb40}
+.btn-g{background:#059669;color:#fff;box-shadow:0 2px 8px #05966930}
+.btn-g:hover{background:#047857}
+.btn-r{background:#dc2626;color:#fff}
+.btn-r:hover{background:#b91c1c}
+.btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border)}
+.btn-ghost:hover{border-color:var(--border2);background:var(--bg3);color:var(--text1)}
+.btn-del{background:var(--red-l);color:var(--red);border:1px solid var(--red-b);
+  padding:5px 11px;font-size:12px;border-radius:7px}
+.btn-del:hover{background:#fecaca}
+.btn-xs{background:var(--bg3);color:var(--text2);border:1px solid var(--border);
+  padding:5px 11px;font-size:12px;border-radius:7px}
+.btn-xs:hover{background:var(--bg4);color:var(--text1)}
+
+/* ── APP SHELL ── */
+#app-shell{display:flex;height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ── */
+#sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);
+  background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;transition:all .25s cubic-bezier(.4,0,.2,1);
+  position:relative;z-index:50;box-shadow:2px 0 8px #0000000a}
+#sidebar.mini{width:64px;min-width:64px}
+.s-logo{padding:16px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;overflow:hidden;white-space:nowrap;
+  text-decoration:none}
+.s-logo-mark{width:34px;height:34px;background:linear-gradient(135deg,#2563eb,#059669);
+  border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:12px;color:#fff;flex-shrink:0;letter-spacing:-.3px}
+.s-logo-t{font-weight:800;font-size:13.5px;color:var(--text1);line-height:1.2}
+.s-logo-s{font-size:10.5px;color:var(--text3);font-weight:500}
+.s-tog{position:absolute;top:50%;right:-12px;transform:translateY(-50%);
+  width:24px;height:24px;background:var(--bg2);border:1.5px solid var(--border);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:60;color:var(--text3);transition:all .18s;
+  box-shadow:0 2px 6px #0000000f}
+.s-tog:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.s-nav{flex:1;overflow-y:auto;padding:8px 0}
+.s-grp{font-size:9.5px;font-weight:800;color:var(--text3);letter-spacing:.1em;
+  text-transform:uppercase;padding:12px 16px 4px;white-space:nowrap;overflow:hidden}
+#sidebar.mini .s-grp{opacity:0;height:20px;padding:6px 0}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 13px;margin:1px 8px;
+  border-radius:9px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--text2);
+  white-space:nowrap;overflow:hidden;transition:all .16s}
+.ni:hover{background:var(--bg3);color:var(--text1)}
+.ni.act{background:var(--accent-l);color:var(--accent);font-weight:700}
+.ni .ic{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.ni .la{flex:1}
+.ni .nb{font-size:10px;font-weight:800;background:var(--accent);color:#fff;
+  border-radius:20px;padding:2px 7px;flex-shrink:0}
+#sidebar.mini .la,#sidebar.mini .nb,#sidebar.mini .s-logo-t,
+#sidebar.mini .s-logo-s,#sidebar.mini .s-uname,#sidebar.mini .s-urole{display:none}
+.s-foot{padding:10px;border-top:1px solid var(--border)}
+.s-ucard{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:10px;
+  background:var(--bg3);overflow:hidden;white-space:nowrap;cursor:default}
+.s-av{width:30px;height:30px;background:linear-gradient(135deg,#2563eb,#059669);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:12px;color:#fff;flex-shrink:0}
+.s-uname{font-size:12.5px;font-weight:700;color:var(--text1)}
+.s-urole{font-size:10.5px;color:var(--text3)}
+.s-out{margin-left:auto;color:var(--text3);cursor:pointer;transition:color .18s;flex-shrink:0;padding:2px}
+.s-out:hover{color:var(--red)}
+
+/* ── MAIN ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.topbar{height:58px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 26px;flex-shrink:0;box-shadow:0 1px 4px #0000000a}
+.tb-l .tb-title{font-size:17px;font-weight:800;color:var(--text1)}
+.tb-l .tb-sub{font-size:11.5px;color:var(--text3);margin-top:2px;font-weight:500}
+.tb-r{display:flex;align-items:center;gap:10px}
+.net-pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;
+  padding:5px 12px;border-radius:20px}
+.net-on{background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
+.net-off{background:var(--red-l);color:var(--red);border:1px solid var(--red-b)}
+.net-dot{width:7px;height:7px;border-radius:50%}
+.net-on .net-dot{background:var(--green)}
+.net-off .net-dot{background:var(--red);animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.page-body{flex:1;overflow-y:auto;padding:24px 26px}
+
+/* ── METRIC CARDS ── */
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.mc{background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  padding:20px 22px;transition:all .2s;position:relative;overflow:hidden}
+.mc:hover{border-color:var(--border2);box-shadow:0 4px 16px #0000000d;transform:translateY(-1px)}
+.mc-lbl{font-size:10.5px;font-weight:800;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.mc-ico{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.mc-val{font-size:26px;font-weight:800;line-height:1;margin-bottom:5px}
+.mc-sub{font-size:11.5px;color:var(--text3);font-weight:500}
+.mc-stripe{position:absolute;top:0;right:0;width:4px;height:100%;border-radius:0 14px 14px 0}
+.mc.inc .mc-val{color:var(--green)} .mc.inc .mc-stripe{background:linear-gradient(180deg,#059669,#10b981)}
+.mc.exp .mc-val{color:var(--red)}   .mc.exp .mc-stripe{background:linear-gradient(180deg,#dc2626,#ef4444)}
+.mc.pro .mc-val{color:var(--accent)} .mc.pro .mc-stripe{background:linear-gradient(180deg,#2563eb,#3b82f6)}
+.mc.act .mc-val{color:var(--yellow)} .mc.act .mc-stripe{background:linear-gradient(180deg,#d97706,#f59e0b)}
+
+/* ── CARD ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;
+  box-shadow:0 1px 3px #0000000a}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;background:var(--bg2)}
+.card-title{font-size:13.5px;font-weight:700;color:var(--text1);display:flex;align-items:center;gap:7px}
+.card-sub{font-size:11.5px;color:var(--text3);font-weight:500}
+
+/* ── TABLE ── */
+.tw{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse}
+table.t th{background:var(--bg3);padding:10px 16px;text-align:left;font-size:10.5px;
+  font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);
+  border-bottom:1px solid var(--border);white-space:nowrap}
+table.t td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;
+  color:var(--text2);vertical-align:middle}
+table.t tr:last-child td{border-bottom:none}
+table.t tr:hover td{background:#f8faff}
+table.t td.pr{color:var(--text1);font-weight:600}
+table.t td.mn{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:500}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;
+  font-size:11px;font-weight:700;letter-spacing:.02em;gap:4px}
+.b-active   {background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
+.b-completed{background:var(--accent-l);color:var(--accent);border:1px solid var(--accent-b)}
+.b-hold     {background:var(--yellow-l);color:var(--yellow);border:1px solid var(--yellow-b)}
+.b-cancelled{background:var(--red-l);color:var(--red);border:1px solid var(--red-b)}
+.b-admin    {background:var(--purple-l);color:var(--purple);border:1px solid #c4b5fd}
+.b-manager  {background:var(--orange-l);color:var(--orange);border:1px solid #fed7aa}
+.b-viewer   {background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+
+/* ── SEARCH BAR ── */
+.sbar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg3)}
+.sbar input{flex:1;max-width:260px;background:var(--bg2);border:1.5px solid var(--border);
+  border-radius:8px;padding:7px 12px;font-size:13px;color:var(--text1);
+  font-family:'Plus Jakarta Sans',sans-serif;outline:none}
+.sbar input:focus{border-color:var(--accent)}
+.sbar .ss{font-size:11.5px;color:var(--text3);margin-left:auto;font-weight:500}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
+.sh-l .sh-title{font-size:20px;font-weight:800;color:var(--text1)}
+.sh-l .sh-sub{font-size:12px;color:var(--text3);margin-top:3px;font-weight:500}
+.sh-r{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* ── PILL ── */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;
+  border-radius:20px;font-size:12px;font-weight:700}
+.pill-g{background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
+.pill-r{background:var(--red-l);color:var(--red);border:1px solid var(--red-b)}
+
+/* ── CHART ── */
+.ch-wrap{position:relative;height:270px}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-ico{font-size:38px;margin-bottom:12px;opacity:.6}
+.empty-msg{font-size:13.5px;font-weight:500}
+
+/* ── PROGRESS ── */
+.pbar{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.pfill{height:100%;border-radius:3px;transition:width .6s}
+
+/* ── MODAL ── */
+.mbg{position:fixed;inset:0;background:#00000045;z-index:200;display:flex;
+  align-items:center;justify-content:center;opacity:0;transition:opacity .2s;pointer-events:none;
+  backdrop-filter:blur(2px)}
+.mbg.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:18px;
+  padding:28px;width:100%;max-width:500px;
+  box-shadow:0 20px 60px #0000002a,0 4px 12px #0000001a;
+  transform:scale(.96) translateY(8px);transition:transform .2s}
+.mbg.open .modal{transform:scale(1) translateY(0)}
+.mhead{font-size:16px;font-weight:800;color:var(--text1);margin-bottom:22px;
+  display:flex;align-items:center;justify-content:space-between}
+.mclose{cursor:pointer;color:var(--text3);font-size:22px;line-height:1;
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;transition:all .15s}
+.mclose:hover{background:var(--bg3);color:var(--text1)}
+.fg{display:grid;gap:14px}
+.fg2{grid-template-columns:1fr 1fr}
+.fg3{grid-template-columns:1fr 1fr 1fr}
+.s2{grid-column:span 2}
+
+/* ── TOAST ── */
+#toasts{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;padding:12px 15px;font-size:13px;font-weight:600;color:var(--text1);
+  box-shadow:0 8px 30px #00000018,0 2px 8px #0000000f;
+  animation:tin .3s cubic-bezier(.34,1.56,.64,1);pointer-events:all;min-width:230px}
+.toast.ts{border-left:3px solid var(--green)}.toast.te{border-left:3px solid var(--red)}.toast.ti{border-left:3px solid var(--accent)}
+.ticon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.toast.ts .ticon{background:var(--green-l);color:var(--green)}
+.toast.te .ticon{background:var(--red-l);color:var(--red)}
+.toast.ti .ticon{background:var(--accent-l);color:var(--accent)}
+@keyframes tin{from{opacity:0;transform:translateY(12px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes tout{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(8px)}}
+
+/* ── LOGIN ERR ── */
+.lerr{background:var(--red-l);border:1px solid var(--red-b);border-radius:9px;
+  padding:10px 13px;font-size:12.5px;color:var(--red);font-weight:600;display:none}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:4px 0}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){.mgrid{grid-template-columns:1fr 1fr}.fg3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){
+  .mgrid{grid-template-columns:1fr}.fg2,.fg3{grid-template-columns:1fr}.s2{grid-column:span 1}
+  #sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);z-index:100}
+  #sidebar.mob{transform:translateX(0)}.page-body{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="login-view">
+  <div class="lcard">
+    <div class="llogo">SSI</div>
+    <div style="text-align:center;margin-bottom:28px">
+      <h1 style="font-size:20px;font-weight:800;color:var(--text1);letter-spacing:-.3px">Smart Swift Innovations</h1>
+      <p style="font-size:12px;color:var(--text3);margin-top:5px;font-weight:500">Project Financial CRM · Pvt Ltd</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <label class="fl">Username</label>
+        <input id="li-u" class="fi" type="text" placeholder="Enter username" autocomplete="username"/>
+      </div>
+      <div>
+        <label class="fl">Password</label>
+        <input id="li-p" class="fi" type="password" placeholder="Enter password" autocomplete="current-password"/>
+      </div>
+      <div id="li-err" class="lerr"></div>
+      <button class="btn btn-p" id="li-btn" onclick="Auth.login()" style="width:100%;justify-content:center;padding:12px;font-size:14px">
+        Sign In
+        <svg id="li-spin" style="display:none;animation:spin .7s linear infinite" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div style="margin-top:20px;padding:12px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)">
+      <p style="font-size:11.5px;color:var(--text3);text-align:center;font-weight:500">
+        Default login: <strong style="color:var(--text1)">admin</strong> / <strong style="color:var(--text1)">admin123</strong>
+      </p>
+    </div>
+  </div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<!-- ══════════ APP SHELL ══════════ -->
+<div id="app-shell" style="display:none">
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="s-logo">
+      <div class="s-logo-mark">SSI</div>
+      <div>
+        <div class="s-logo-t">Smart Swift</div>
+        <div class="s-logo-s">Innovations Pvt Ltd</div>
+      </div>
+    </div>
+    <div class="s-tog" onclick="UI.toggleSidebar()">
+      <svg id="stog-ico" width="10" height="10" viewBox="0 0 12 12" fill="none">
+        <path d="M7.5 2L3.5 6L7.5 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="s-nav">
+      <div class="s-grp">Main</div>
+      <div class="ni act" id="nav-dashboard" onclick="UI.go('dashboard')">
+        <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
+        <span class="la">Dashboard</span>
+      </div>
+      <div class="ni" id="nav-projects" onclick="UI.go('projects')">
+        <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></span>
+        <span class="la">Projects</span>
+        <span class="nb" id="n-proj-ct">0</span>
+      </div>
+
+      <div class="s-grp">Finance</div>
+      <div class="ni" id="nav-income" onclick="UI.go('income')">
+        <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
+        <span class="la">Income</span>
+      </div>
+      <div class="ni" id="nav-expenses" onclick="UI.go('expenses')">
+        <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg></span>
+        <span class="la">Expenses</span>
+      </div>
+
+      <div class="s-grp">Admin</div>
+      <div class="ni" id="nav-settings" onclick="UI.go('settings')" style="display:none">
+        <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+        <span class="la">User Settings</span>
+      </div>
+    </div>
+
+    <div class="s-foot">
+      <div class="s-ucard">
+        <div class="s-av" id="s-av">A</div>
+        <div style="flex:1;min-width:0">
+          <div class="s-uname" id="s-uname">Admin</div>
+          <div class="s-urole" id="s-urole">Administrator</div>
+        </div>
+        <div class="s-out" onclick="Auth.logout()" title="Sign Out">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN PANEL -->
+  <div id="main">
+    <div class="topbar">
+      <div class="tb-l">
+        <div class="tb-title" id="tb-title">Dashboard</div>
+        <div class="tb-sub" id="tb-sub">Financial overview</div>
+      </div>
+      <div class="tb-r">
+        <div class="net-pill net-on" id="net-pill">
+          <div class="net-dot"></div>
+          <span id="net-txt">Online</span>
+        </div>
+        <span id="queue-badge" style="font-size:11.5px;color:var(--text3);font-weight:600;display:none">
+          <span id="queue-ct">0</span> queued
+        </span>
+      </div>
+    </div>
+
+    <div class="page-body" id="page-body">
+
+      <!-- ▓▓ DASHBOARD ▓▓ -->
+      <div id="pg-dashboard" class="pg">
+        <div class="mgrid">
+          <div class="mc inc">
+            <div class="mc-stripe"></div>
+            <div class="mc-lbl"><div class="mc-ico" style="background:var(--green-l);color:var(--green)">↑</div>Total Income</div>
+            <div class="mc-val" id="d-inc">₹0</div>
+            <div class="mc-sub" id="d-inc-s">0 entries</div>
+          </div>
+          <div class="mc exp">
+            <div class="mc-stripe"></div>
+            <div class="mc-lbl"><div class="mc-ico" style="background:var(--red-l);color:var(--red)">↓</div>Total Expenses</div>
+            <div class="mc-val" id="d-exp">₹0</div>
+            <div class="mc-sub" id="d-exp-s">0 entries</div>
+          </div>
+          <div class="mc pro">
+            <div class="mc-stripe"></div>
+            <div class="mc-lbl"><div class="mc-ico" style="background:var(--accent-l);color:var(--accent)">≡</div>Net Profit</div>
+            <div class="mc-val" id="d-pro">₹0</div>
+            <div class="mc-sub" id="d-pro-s">Income − Expenses</div>
+          </div>
+          <div class="mc act">
+            <div class="mc-stripe"></div>
+            <div class="mc-lbl"><div class="mc-ico" style="background:var(--yellow-l);color:var(--yellow)">◈</div>Active Projects</div>
+            <div class="mc-val" id="d-act">0</div>
+            <div class="mc-sub" id="d-act-s">0 total</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                Income vs Expenses by Project
+              </div>
+              <span class="card-sub" id="chart-ts"></span>
+            </div>
+            <div style="padding:18px"><div class="ch-wrap"><canvas id="main-chart"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Recent Activity
+              </div>
+            </div>
+            <div id="d-activity" style="max-height:295px;overflow-y:auto"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Project Financial Summary</div>
+            <button class="btn btn-xs" onclick="UI.go('projects')">View All →</button>
+          </div>
+          <div class="tw">
+            <table class="t">
+              <thead><tr><th>Project</th><th>Client</th><th>Budget</th><th>Income</th><th>Expenses</th><th>Net</th><th>Collected</th><th>Status</th></tr></thead>
+              <tbody id="d-ptable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ▓▓ PROJECTS ▓▓ -->
+      <div id="pg-projects" class="pg" style="display:none">
+        <div class="sh">
+          <div class="sh-l">
+            <div class="sh-title">Projects</div>
+            <div class="sh-sub">Manage all client engagements</div>
+          </div>
+          <div class="sh-r" id="proj-add-wrap">
+            <button class="btn btn-p" onclick="M.open('m-proj')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Project
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sbar">
+            <input id="p-q" type="text" placeholder="🔍  Search projects…" oninput="R.projects()"/>
+            <select id="p-fs" class="fi" style="max-width:150px;padding:7px 11px;font-size:12.5px" onchange="R.projects()">
+              <option value="">All Statuses</option>
+              <option>Active</option><option>Completed</option><option>On Hold</option><option>Cancelled</option>
+            </select>
+            <span class="ss" id="p-ct"></span>
+          </div>
+          <div class="tw"><table class="t">
+            <thead><tr><th>Project Name</th><th>Client</th><th>Budget</th><th>Received</th><th>Start Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="p-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ▓▓ INCOME ▓▓ -->
+      <div id="pg-income" class="pg" style="display:none">
+        <div class="sh">
+          <div class="sh-l">
+            <div class="sh-title">Income Ledger</div>
+            <div class="sh-sub">All payments received</div>
+          </div>
+          <div class="sh-r">
+            <span class="pill pill-g" id="inc-total">Total: ₹0</span>
+            <button class="btn btn-g" id="inc-add-btn" onclick="M.openIncome()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Record Income
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sbar">
+            <input id="i-q" type="text" placeholder="🔍  Search income…" oninput="R.income()"/>
+            <select id="i-fp" class="fi" style="max-width:190px;padding:7px 11px;font-size:12.5px" onchange="R.income()">
+              <option value="">All Projects</option>
+            </select>
+            <span class="ss" id="i-ct"></span>
+          </div>
+          <div class="tw"><table class="t">
+            <thead><tr><th>Date</th><th>Project</th><th>Amount</th><th>Mode</th><th>Notes</th><th>Actions</th></tr></thead>
+            <tbody id="i-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ▓▓ EXPENSES ▓▓ -->
+      <div id="pg-expenses" class="pg" style="display:none">
+        <div class="sh">
+          <div class="sh-l">
+            <div class="sh-title">Expense Ledger</div>
+            <div class="sh-sub">All operational costs</div>
+          </div>
+          <div class="sh-r">
+            <span class="pill pill-r" id="exp-total">Total: ₹0</span>
+            <button class="btn btn-r" id="exp-add-btn" onclick="M.openExpense()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Record Expense
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sbar">
+            <input id="e-q" type="text" placeholder="🔍  Search expenses…" oninput="R.expenses()"/>
+            <select id="e-fc" class="fi" style="max-width:160px;padding:7px 11px;font-size:12.5px" onchange="R.expenses()">
+              <option value="">All Categories</option>
+              <option>Software</option><option>Hardware</option><option>Salaries</option>
+              <option>Marketing</option><option>Travel</option><option>Office</option>
+              <option>Hosting</option><option>Outsourcing</option><option>Miscellaneous</option>
+            </select>
+            <span class="ss" id="e-ct"></span>
+          </div>
+          <div class="tw"><table class="t">
+            <thead><tr><th>Date</th><th>Project</th><th>Amount</th><th>Category</th><th>Description</th><th>Actions</th></tr></thead>
+            <tbody id="e-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ▓▓ SETTINGS ▓▓ -->
+      <div id="pg-settings" class="pg" style="display:none">
+        <div class="sh">
+          <div class="sh-l">
+            <div class="sh-title">User Settings</div>
+            <div class="sh-sub">Manage team access &amp; roles</div>
+          </div>
+          <div class="sh-r">
+            <button class="btn btn-p" onclick="M.open('m-user')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add User
+            </button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px">
+          <div class="card" style="padding:16px 18px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <span class="badge b-admin">Admin</span>
+            </div>
+            <p style="font-size:12px;color:var(--text3);font-weight:500;line-height:1.5">Full access — manage users, all data, change roles, delete records.</p>
+          </div>
+          <div class="card" style="padding:16px 18px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <span class="badge b-manager">Manager</span>
+            </div>
+            <p style="font-size:12px;color:var(--text3);font-weight:500;line-height:1.5">Can view and add projects, income, expenses. Cannot manage users.</p>
+          </div>
+          <div class="card" style="padding:16px 18px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <span class="badge b-viewer">Viewer</span>
+            </div>
+            <p style="font-size:12px;color:var(--text3);font-weight:500;line-height:1.5">Read-only. All forms and add/delete buttons are hidden.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Registered Users</div>
+            <span class="card-sub" id="u-ct"></span>
+          </div>
+          <div class="tw"><table class="t">
+            <thead><tr><th>Username</th><th>Full Name</th><th>Current Role</th><th>Change Role</th><th>Actions</th></tr></thead>
+            <tbody id="u-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+  </div><!-- /main -->
+</div><!-- /app-shell -->
+
+<!-- ══ MODALS ══ -->
+<!-- Project -->
+<div class="mbg" id="m-proj">
+  <div class="modal" style="max-width:480px">
+    <div class="mhead">Add New Project <span class="mclose" onclick="M.close('m-proj')">×</span></div>
+    <div class="fg fg2" style="margin-bottom:16px">
+      <div><label class="fl">Project Name *</label><input id="mp-n" class="fi" type="text" placeholder="e.g. Website Redesign"/></div>
+      <div><label class="fl">Client Name *</label><input id="mp-c" class="fi" type="text" placeholder="e.g. Acme Corp"/></div>
+      <div><label class="fl">Budget (₹) *</label><input id="mp-b" class="fi" type="number" min="0" placeholder="500000"/></div>
+      <div><label class="fl">Start Date</label><input id="mp-d" class="fi" type="date"/></div>
+      <div class="s2"><label class="fl">Status</label>
+        <select id="mp-s" class="fi"><option>Active</option><option>Completed</option><option>On Hold</option><option>Cancelled</option></select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="M.close('m-proj')">Cancel</button>
+      <button class="btn btn-p" onclick="A.addProject()">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- Income -->
+<div class="mbg" id="m-inc">
+  <div class="modal" style="max-width:480px">
+    <div class="mhead">Record Income <span class="mclose" onclick="M.close('m-inc')">×</span></div>
+    <div class="fg fg2" style="margin-bottom:16px">
+      <div class="s2"><label class="fl">Project *</label><select id="mi-p" class="fi"><option value="">Select project…</option></select></div>
+      <div><label class="fl">Amount (₹) *</label><input id="mi-a" class="fi" type="number" min="0" placeholder="50000"/></div>
+      <div><label class="fl">Date *</label><input id="mi-d" class="fi" type="date"/></div>
+      <div><label class="fl">Payment Mode</label>
+        <select id="mi-m" class="fi"><option>Bank Transfer</option><option>UPI</option><option>Cheque</option><option>Cash</option><option>Credit Card</option><option>Other</option></select>
+      </div>
+      <div><label class="fl">Notes</label><input id="mi-n" class="fi" type="text" placeholder="Optional…"/></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="M.close('m-inc')">Cancel</button>
+      <button class="btn btn-g" onclick="A.addIncome()">Save Income</button>
+    </div>
+  </div>
+</div>
+
+<!-- Expense -->
+<div class="mbg" id="m-exp">
+  <div class="modal" style="max-width:480px">
+    <div class="mhead">Record Expense <span class="mclose" onclick="M.close('m-exp')">×</span></div>
+    <div class="fg fg2" style="margin-bottom:16px">
+      <div class="s2"><label class="fl">Project *</label><select id="me-p" class="fi"><option value="">Select project…</option></select></div>
+      <div><label class="fl">Amount (₹) *</label><input id="me-a" class="fi" type="number" min="0" placeholder="15000"/></div>
+      <div><label class="fl">Date *</label><input id="me-d" class="fi" type="date"/></div>
+      <div><label class="fl">Category</label>
+        <select id="me-c" class="fi"><option>Software</option><option>Hardware</option><option>Salaries</option><option>Marketing</option><option>Travel</option><option>Office</option><option>Hosting</option><option>Outsourcing</option><option>Miscellaneous</option></select>
+      </div>
+      <div><label class="fl">Description</label><input id="me-n" class="fi" type="text" placeholder="Brief description…"/></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="M.close('m-exp')">Cancel</button>
+      <button class="btn btn-r" onclick="A.addExpense()">Save Expense</button>
+    </div>
+  </div>
+</div>
+
+<!-- User -->
+<div class="mbg" id="m-user">
+  <div class="modal" style="max-width:460px">
+    <div class="mhead">Add New User <span class="mclose" onclick="M.close('m-user')">×</span></div>
+    <div class="fg fg2" style="margin-bottom:16px">
+      <div><label class="fl">Username *</label><input id="mu-u" class="fi" type="text" placeholder="e.g. john_doe"/></div>
+      <div><label class="fl">Full Name *</label><input id="mu-n" class="fi" type="text" placeholder="e.g. John Doe"/></div>
+      <div><label class="fl">Password *</label><input id="mu-p" class="fi" type="password" placeholder="Min 6 characters"/></div>
+      <div><label class="fl">Role</label>
+        <select id="mu-r" class="fi"><option>Viewer</option><option>Manager</option><option>Admin</option></select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="M.close('m-user')">Cancel</button>
+      <button class="btn btn-p" onclick="A.addUser()">Create User</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<!-- ══════════ JAVASCRIPT ══════════ -->
+<script>
+/* ─── FIREBASE ─── */
+firebase.initializeApp({
+  databaseURL: "https://ssi-crm-4c764-default-rtdb.europe-west1.firebasedatabase.app/"
+});
+const DB = firebase.database();
+
+/* ─── PURGE ALL OLD localStorage KEYS from previous versions ─── */
+[
+  'ssi_session','ssi_projects','ssi_income','ssi_expenses','ssi_users','ssi_queue',
+  'ssi_crm_session','ssi_crm_projects','ssi_crm_income','ssi_crm_expenses',
+  'ssi_crm_users','ssi_crm_sync_queue',
+  'ssi2_session','ssi2_projects','ssi2_income','ssi2_expenses','ssi2_users','ssi2_queue'
+].forEach(k => localStorage.removeItem(k));
+
+/* ─── STORE (current version keys) ─── */
+const K = { SES:'ssi3_ses', PRJ:'ssi3_prj', INC:'ssi3_inc', EXP:'ssi3_exp', USR:'ssi3_usr', QUE:'ssi3_que' };
+const S = {
+  g(k, d={}) { try{ const r=localStorage.getItem(k); return r?JSON.parse(r):d; }catch{ return d; } },
+  s(k,v)     { try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){ console.warn(e); } },
+  d(k)       { localStorage.removeItem(k); }
+};
+
+/* ─── OFFLINE QUEUE ─── */
+const Q = {
+  add(op)  { const q=S.g(K.QUE,[]); q.push({...op,ts:Date.now()}); S.s(K.QUE,q); UI.qBadge(); },
+  all()    { return S.g(K.QUE,[]); },
+  clear()  { S.s(K.QUE,[]); UI.qBadge(); },
+  size()   { return this.all().length; }
+};
+
+/* ─── NETWORK ─── */
+let Online = navigator.onLine;
+window.addEventListener('online',  () => { Online=true;  UI.netBadge(true);  toast('Connection restored — syncing…','i'); Net.sync(); });
+window.addEventListener('offline', () => { Online=false; UI.netBadge(false); toast('Gone offline — changes queued.','i'); });
+
+const Net = {
+  async sync() {
+    try { await FB.flush(); await FB.pull(); R.refresh(); toast('Sync complete ✓','s'); }
+    catch(e) { console.error('Sync error:',e); }
+  }
+};
+
+/* ─── FIREBASE LAYER ─── */
+const FB = {
+  async set(path,data)   { await DB.ref(path).set(data); },
+  async del(path)        { await DB.ref(path).remove(); },
+  async get(path)        { const s=await DB.ref(path).get(); return s.exists()?s.val():null; },
+  async upd(path,data)   { await DB.ref(path).update(data); },
+
+  async write(col, id, data) {
+    const km={projects:K.PRJ,income:K.INC,expenses:K.EXP,users:K.USR};
+    const lk=km[col]; if(lk){ const l=S.g(lk,{}); l[id]=data; S.s(lk,l); }
+    const path=`${col}/${id}`;
+    if(Online){ try{ await FB.set(path,data); }catch(e){ Q.add({t:'set',path,data}); } }
+    else { Q.add({t:'set',path,data}); }
+  },
+
+  async erase(col, id) {
+    const km={projects:K.PRJ,income:K.INC,expenses:K.EXP,users:K.USR};
+    const lk=km[col]; if(lk){ const l=S.g(lk,{}); delete l[id]; S.s(lk,l); }
+    const path=`${col}/${id}`;
+    if(Online){ try{ await FB.del(path); }catch(e){ Q.add({t:'del',path}); } }
+    else { Q.add({t:'del',path}); }
+  },
+
+  async flush() {
+    for(const op of Q.all()){
+      try{
+        if(op.t==='set') await FB.set(op.path,op.data);
+        if(op.t==='del') await FB.del(op.path);
+      }catch(e){ console.warn('Flush fail:',op); return; }
+    }
+    Q.clear();
+  },
+
+  async pull() {
+    const r=await DB.ref('/').get(); if(!r.exists()) return;
+    const v=r.val();
+    if(v.projects) S.s(K.PRJ,v.projects);
+    if(v.income)   S.s(K.INC,v.income);
+    if(v.expenses) S.s(K.EXP,v.expenses);
+    if(v.users)    S.s(K.USR,v.users);
+  },
+
+  async ensureAdmin() {
+    /* Always patch admin hash to match current algo — fixes stale hashes from old versions */
+    const hash = await hashPwd('admin123');
+    const rec  = { password_hash:hash, role:'Admin', name:'Administrator' };
+    const existing = await FB.get('users');
+    if(!existing){
+      await FB.set('users',{admin:rec});
+      S.s(K.USR,{admin:rec});
+      toast('Default admin created → admin / admin123','s',7000);
+    } else {
+      await FB.set('users/admin',rec);
+      S.s(K.USR,{...existing,admin:rec});
+    }
+  },
+
+  listen() {
+    DB.ref('projects').on('value',s=>{ if(s.exists()){ S.s(K.PRJ,s.val()); R.refresh(); }});
+    DB.ref('income').on('value',  s=>{ if(s.exists()){ S.s(K.INC,s.val()); R.refresh(); }});
+    DB.ref('expenses').on('value',s=>{ if(s.exists()){ S.s(K.EXP,s.val()); R.refresh(); }});
+    DB.ref('users').on('value',   s=>{ if(s.exists()){ S.s(K.USR,s.val()); R.refresh(); }});
+  }
+};
+
+/* ─── UTILS ─── */
+const genId = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+async function hashPwd(pwd) {
+  /* Fixed salt — never change this or all passwords break */
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('SSI_CRM_FIXED::'+pwd));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+const inr  = n => '₹'+(parseFloat(n)||0).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2});
+const fdt  = d => { if(!d)return'—'; try{return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch{return d;} };
+const tod  = () => new Date().toISOString().split('T')[0];
+
+function sbadge(s){
+  const m={Active:'b-active',Completed:'b-completed','On Hold':'b-hold',Cancelled:'b-cancelled'};
+  return `<span class="badge ${m[s]||'b-hold'}">${s||'—'}</span>`;
+}
+function rbadge(r){
+  const m={Admin:'b-admin',Manager:'b-manager',Viewer:'b-viewer'};
+  return `<span class="badge ${m[r]||'b-viewer'}">${r||'—'}</span>`;
+}
+function payClr(m){
+  return {
+    'Bank Transfer':'#2563eb','UPI':'#059669','Cheque':'#d97706',
+    'Cash':'#7c3aed','Credit Card':'#ea580c','Other':'#64748b'
+  }[m]||'#64748b';
+}
+function catClr(c){
+  return {
+    Software:'#2563eb',Hardware:'#d97706',Salaries:'#dc2626',Marketing:'#7c3aed',
+    Travel:'#059669',Office:'#64748b',Hosting:'#0891b2',Outsourcing:'#ea580c',Miscellaneous:'#94a3b8'
+  }[c]||'#94a3b8';
+}
+
+/* ─── TOAST ─── */
+function toast(msg, type='i', dur=3500){
+  const icons={s:'✓',e:'✗',i:'i'};
+  const el=document.createElement('div');
+  el.className=`toast t${type}`;
+  el.innerHTML=`<div class="ticon">${icons[type]||'i'}</div><span>${msg}</span>`;
+  document.getElementById('toasts').prepend(el);
+  setTimeout(()=>{ el.style.animation='tout .3s ease forwards'; setTimeout(()=>el.remove(),280); },dur);
+}
+
+/* ─── AUTH ─── */
+let CU = null; // current user
+
+const Auth = {
+  async login(){
+    const u=document.getElementById('li-u').value.trim().toLowerCase();
+    const p=document.getElementById('li-p').value;
+    const err=document.getElementById('li-err');
+    err.style.display='none';
+    if(!u||!p){ err.textContent='Enter username and password.'; err.style.display='block'; return; }
+
+    document.getElementById('li-btn').disabled=true;
+    document.getElementById('li-spin').style.display='inline-block';
+
+    try{
+      const hash = await hashPwd(p);
+      let users = {};
+
+      /* Always fetch from Firebase first when online (gets freshly-patched hashes) */
+      if(Online){
+        try{ const r=await FB.get('users'); if(r){ S.s(K.USR,r); users=r; } }catch(e){}
+      }
+      if(!Object.keys(users).length) users=S.g(K.USR,{});
+
+      const uu=users[u];
+      if(!uu)                   throw new Error('User not found.');
+      if(uu.password_hash!==hash) throw new Error('Incorrect password.');
+
+      CU={ username:u, role:uu.role, name:uu.name };
+      S.s(K.SES,CU);
+
+      if(Online){ await FB.pull(); FB.listen(); }
+      UI.showApp();
+      toast(`Welcome, ${uu.name||u}!`,'s');
+    }catch(e){
+      err.textContent=e.message||'Login failed.';
+      err.style.display='block';
+    }finally{
+      document.getElementById('li-btn').disabled=false;
+      document.getElementById('li-spin').style.display='none';
+    }
+  },
+
+  logout(){
+    S.d(K.SES); CU=null;
+    document.getElementById('login-view').style.display='flex';
+    document.getElementById('app-shell').style.display='none';
+    document.getElementById('li-u').value='';
+    document.getElementById('li-p').value='';
+    document.getElementById('li-err').style.display='none';
+    toast('Signed out.','i');
+  }
+};
+
+/* ─── UI CONTROLLER ─── */
+let curPage = 'dashboard';
+
+const UI = {
+  showApp(){
+    document.getElementById('login-view').style.display='none';
+    document.getElementById('app-shell').style.display='flex';
+    document.getElementById('s-av').textContent=(CU.name||CU.username).charAt(0).toUpperCase();
+    document.getElementById('s-uname').textContent=CU.name||CU.username;
+    document.getElementById('s-urole').textContent=CU.role;
+    if(CU.role==='Admin') document.getElementById('nav-settings').style.display='flex';
+    if(CU.role==='Viewer'){
+      ['proj-add-wrap','inc-add-btn','exp-add-btn'].forEach(id=>{
+        const el=document.getElementById(id); if(el) el.style.display='none';
+      });
+    }
+    UI.netBadge(Online);
+    UI.go('dashboard');
+  },
+
+  go(page){
+    if(page==='settings'&&CU?.role!=='Admin'){ toast('Admin only.','e'); return; }
+    document.querySelectorAll('.pg').forEach(p=>p.style.display='none');
+    document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+    const pg=document.getElementById('pg-'+page); if(pg) pg.style.display='block';
+    const nv=document.getElementById('nav-'+page); if(nv) nv.classList.add('act');
+    curPage=page;
+    const t={
+      dashboard:['Dashboard','Financial overview & analytics'],
+      projects: ['Projects','Manage all client engagements'],
+      income:   ['Income Ledger','All payments received'],
+      expenses: ['Expense Ledger','All operational costs'],
+      settings: ['User Settings','Manage team access & roles']
+    };
+    if(t[page]){
+      document.getElementById('tb-title').textContent=t[page][0];
+      document.getElementById('tb-sub').textContent=t[page][1];
+    }
+    if(page==='income')  fillProjDD('i-fp');
+    if(page==='expenses') fillProjDD(null);
+    R[page]&&R[page]();
+  },
+
+  toggleSidebar(){
+    const s=document.getElementById('sidebar');
+    s.classList.toggle('mini');
+    document.getElementById('stog-ico').style.transform=s.classList.contains('mini')?'rotate(180deg)':'';
+  },
+
+  netBadge(on){
+    const b=document.getElementById('net-pill');
+    const t=document.getElementById('net-txt');
+    b.className='net-pill '+(on?'net-on':'net-off');
+    t.textContent=on?'Online':'Offline';
+  },
+
+  qBadge(){
+    const n=Q.size();
+    const el=document.getElementById('queue-badge');
+    el.style.display=n>0?'inline':'none';
+    document.getElementById('queue-ct').textContent=n;
+  }
+};
+
+/* ─── MODALS ─── */
+const M={
+  open(id)  { document.getElementById(id).classList.add('open'); },
+  close(id) { document.getElementById(id).classList.remove('open'); },
+  openIncome(){
+    fillProjDD('mi-p');
+    document.getElementById('mi-d').value=tod();
+    M.open('m-inc');
+  },
+  openExpense(){
+    fillProjDD('me-p');
+    document.getElementById('me-d').value=tod();
+    M.open('m-exp');
+  }
+};
+document.querySelectorAll('.mbg').forEach(bg=>{
+  bg.addEventListener('click',e=>{ if(e.target===bg) bg.classList.remove('open'); });
+});
+
+function fillProjDD(selId){
+  const projects=S.g(K.PRJ,{});
+  const opts='<option value="">All Projects</option>'+
+    Object.entries(projects).map(([id,p])=>`<option value="${id}">${p.name} (${p.client})</option>`).join('');
+  const singleOpts='<option value="">Select project…</option>'+
+    Object.entries(projects).map(([id,p])=>`<option value="${id}">${p.name} (${p.client})</option>`).join('');
+
+  /* fill filter dropdowns */
+  const ifp=document.getElementById('i-fp');
+  if(ifp){ const c=ifp.value; ifp.innerHTML=opts; ifp.value=c; }
+
+  /* fill modal dropdowns */
+  if(selId){
+    const el=document.getElementById(selId);
+    if(el){ el.innerHTML=selId==='i-fp'||selId==='e-fc'?opts:singleOpts; }
+  }
+  ['mi-p','me-p'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=singleOpts;
+  });
+}
+
+/* ─── ACTIONS (CRUD) ─── */
+const A = {
+  async addProject(){
+    const name   =document.getElementById('mp-n').value.trim();
+    const client =document.getElementById('mp-c').value.trim();
+    const budget =parseFloat(document.getElementById('mp-b').value);
+    const start  =document.getElementById('mp-d').value;
+    const status =document.getElementById('mp-s').value;
+    if(!name)          { toast('Project name required.','e'); return; }
+    if(!client)        { toast('Client name required.','e'); return; }
+    if(!budget||budget<0){ toast('Enter a valid budget.','e'); return; }
+    const id=genId();
+    await FB.write('projects',id,{name,client,start_date:start,status,budget});
+    M.close('m-proj');
+    ['mp-n','mp-c','mp-b'].forEach(f=>{ const el=document.getElementById(f); if(el) el.value=''; });
+    document.getElementById('mp-s').value='Active';
+    toast(`Project "${name}" created!`,'s');
+    R.projects(); R.dashboard();
+  },
+
+  async delProject(id,name){
+    if(!confirm(`Delete project "${name}"?\nAll linked income & expenses will also be removed.`)) return;
+    const income=S.g(K.INC,{}), expenses=S.g(K.EXP,{});
+    for(const [iid,r] of Object.entries(income))   if(r.project_id===id) await FB.erase('income',iid);
+    for(const [eid,r] of Object.entries(expenses)) if(r.project_id===id) await FB.erase('expenses',eid);
+    await FB.erase('projects',id);
+    toast(`"${name}" deleted.`,'i');
+    R.projects(); R.dashboard();
+  },
+
+  async updProjStatus(id,status){
+    const projects=S.g(K.PRJ,{}); if(!projects[id]) return;
+    projects[id].status=status;
+    await FB.write('projects',id,projects[id]);
+    toast('Status updated.','s');
+    R.projects(); R.dashboard();
+  },
+
+  async addIncome(){
+    const pid =document.getElementById('mi-p').value;
+    const amt =parseFloat(document.getElementById('mi-a').value);
+    const date=document.getElementById('mi-d').value;
+    const mode=document.getElementById('mi-m').value;
+    const notes=document.getElementById('mi-n').value.trim();
+    if(!pid)        { toast('Select a project.','e'); return; }
+    if(!amt||amt<=0){ toast('Enter a valid amount.','e'); return; }
+    if(!date)       { toast('Select a date.','e'); return; }
+    const id=genId();
+    await FB.write('income',id,{project_id:pid,amount:amt,date,mode,notes});
+    M.close('m-inc');
+    document.getElementById('mi-a').value='';
+    document.getElementById('mi-n').value='';
+    toast(`Income ${inr(amt)} recorded.`,'s');
+    R.income(); R.dashboard();
+  },
+
+  async delIncome(id){
+    if(!confirm('Delete this income entry?')) return;
+    await FB.erase('income',id);
+    toast('Income entry deleted.','i');
+    R.income(); R.dashboard();
+  },
+
+  async addExpense(){
+    const pid =document.getElementById('me-p').value;
+    const amt =parseFloat(document.getElementById('me-a').value);
+    const date=document.getElementById('me-d').value;
+    const cat =document.getElementById('me-c').value;
+    const desc=document.getElementById('me-n').value.trim();
+    if(!pid)        { toast('Select a project.','e'); return; }
+    if(!amt||amt<=0){ toast('Enter a valid amount.','e'); return; }
+    if(!date)       { toast('Select a date.','e'); return; }
+    const id=genId();
+    await FB.write('expenses',id,{project_id:pid,amount:amt,date,category:cat,description:desc});
+    M.close('m-exp');
+    document.getElementById('me-a').value='';
+    document.getElementById('me-n').value='';
+    toast(`Expense ${inr(amt)} recorded.`,'s');
+    R.expenses(); R.dashboard();
+  },
+
+  async delExpense(id){
+    if(!confirm('Delete this expense entry?')) return;
+    await FB.erase('expenses',id);
+    toast('Expense entry deleted.','i');
+    R.expenses(); R.dashboard();
+  },
+
+  async addUser(){
+    const uname =document.getElementById('mu-u').value.trim().toLowerCase().replace(/\s/g,'');
+    const name  =document.getElementById('mu-n').value.trim();
+    const pass  =document.getElementById('mu-p').value;
+    const role  =document.getElementById('mu-r').value;
+    if(!uname)      { toast('Username required.','e'); return; }
+    if(!name)       { toast('Full name required.','e'); return; }
+    if(pass.length<6){ toast('Password min 6 characters.','e'); return; }
+    const users=S.g(K.USR,{});
+    if(users[uname]){ toast(`Username "${uname}" already exists.`,'e'); return; }
+    const hash=await hashPwd(pass);
+    await FB.write('users',uname,{password_hash:hash,role,name});
+    M.close('m-user');
+    ['mu-u','mu-n','mu-p'].forEach(f=>{ const el=document.getElementById(f); if(el) el.value=''; });
+    toast(`User "${name}" created.`,'s');
+    R.settings();
+  },
+
+  async updRole(uname,role){
+    const users=S.g(K.USR,{}); if(!users[uname]) return;
+    users[uname].role=role;
+    await FB.write('users',uname,users[uname]);
+    toast(`${uname} → ${role}`,'s');
+    R.settings();
+  },
+
+  async delUser(uname,name){
+    if(!confirm(`Delete user "${name}"?`)) return;
+    await FB.erase('users',uname);
+    toast(`User "${name}" deleted.`,'i');
+    R.settings();
+  }
+};
+
+/* ─── CHART ─── */
+let chart=null;
+function renderChart(){
+  const projects=S.g(K.PRJ,{});
+  const income  =S.g(K.INC,{});
+  const expenses=S.g(K.EXP,{});
+  const entries =Object.entries(projects);
+  const ctx=document.getElementById('main-chart'); if(!ctx) return;
+  if(chart) chart.destroy();
+  if(!entries.length) return;
+
+  const labels=entries.map(([,p])=>p.name||'Unnamed');
+  const iData =entries.map(([id])=>Object.values(income).filter(r=>r.project_id===id).reduce((s,r)=>s+(parseFloat(r.amount)||0),0));
+  const eData =entries.map(([id])=>Object.values(expenses).filter(r=>r.project_id===id).reduce((s,r)=>s+(parseFloat(r.amount)||0),0));
+
+  const ts=document.getElementById('chart-ts');
+  if(ts) ts.textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+
+  chart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Income',data:iData,backgroundColor:'#05966920',borderColor:'#059669',borderWidth:2,borderRadius:7,borderSkipped:false},
+        {label:'Expenses',data:eData,backgroundColor:'#dc262620',borderColor:'#dc2626',borderWidth:2,borderRadius:7,borderSkipped:false}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:'#64748b',font:{family:'Plus Jakarta Sans',size:12},boxRadius:4}},
+        tooltip:{
+          backgroundColor:'#fff',borderColor:'#dde3ee',borderWidth:1,
+          titleColor:'#0f1c2e',bodyColor:'#4a5878',
+          callbacks:{label:c=>'  '+inr(c.parsed.y)},
+          padding:12,boxRadius:6
+        }
+      },
+      scales:{
+        x:{ticks:{color:'#8896b0',font:{family:'Plus Jakarta Sans'}},grid:{color:'#f0f3f8'},border:{color:'#e2e8f0'}},
+        y:{ticks:{color:'#8896b0',font:{family:'Plus Jakarta Sans'},callback:v=>'₹'+v.toLocaleString('en-IN')},
+           grid:{color:'#f0f3f8'},border:{color:'#e2e8f0'}}
+      }
+    }
+  });
+}
+
+/* ─── RENDER ENGINE ─── */
+const R = {
+  refresh(){ R[curPage]&&R[curPage](); },
+
+  dashboard(){
+    const projects=S.g(K.PRJ,{});
+    const income  =S.g(K.INC,{});
+    const expenses=S.g(K.EXP,{});
+    const ti=Object.values(income).reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+    const te=Object.values(expenses).reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+    const pro=ti-te;
+    const active=Object.values(projects).filter(p=>p.status==='Active').length;
+
+    document.getElementById('d-inc').textContent  =inr(ti);
+    document.getElementById('d-inc-s').textContent=Object.keys(income).length+' entries';
+    document.getElementById('d-exp').textContent  =inr(te);
+    document.getElementById('d-exp-s').textContent=Object.keys(expenses).length+' entries';
+    document.getElementById('d-pro').textContent  =inr(pro);
+    document.getElementById('d-pro').style.color  =pro>=0?'var(--accent)':'var(--red)';
+    document.getElementById('d-pro-s').textContent=pro>=0?'▲ Profitable':'▼ In Loss';
+    document.getElementById('d-act').textContent  =active;
+    document.getElementById('d-act-s').textContent=Object.keys(projects).length+' total';
+
+    const nb=document.getElementById('n-proj-ct');
+    if(nb) nb.textContent=Object.keys(projects).length;
+
+    renderChart();
+
+    /* Recent activity */
+    const all=[
+      ...Object.entries(income).map(([id,r])=>({...r,_id:id,_t:'inc'})),
+      ...Object.entries(expenses).map(([id,r])=>({...r,_id:id,_t:'exp'}))
+    ].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,10);
+
+    const ra=document.getElementById('d-activity');
+    if(!all.length){
+      ra.innerHTML='<div class="empty"><div class="empty-ico">📊</div><div class="empty-msg">No activity yet</div></div>';
+    }else{
+      ra.innerHTML=all.map(r=>{
+        const isI=r._t==='inc';
+        const proj=projects[r.project_id]?.name||'Unknown';
+        const clr=isI?'var(--green)':'var(--red)';
+        const bg =isI?'var(--green-l)':'var(--red-l)';
+        return`<div style="display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1px solid var(--border)">
+          <div style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${bg};color:${clr};font-size:15px;font-weight:700">${isI?'↑':'↓'}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12.5px;font-weight:600;color:var(--text1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${proj}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${fdt(r.date)} · ${isI?(r.mode||''):(r.category||'')}</div>
+          </div>
+          <div style="font-size:13.5px;font-weight:700;color:${clr};white-space:nowrap">${isI?'+':'-'}${inr(r.amount)}</div>
+        </div>`;
+      }).join('');
+    }
+
+    /* Project summary table */
+    const tb=document.getElementById('d-ptable');
+    const pe=Object.entries(projects);
+    if(!pe.length){
+      tb.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-ico">📁</div><div class="empty-msg">No projects yet.<br><small style="font-size:12px;color:var(--text3)">Go to Projects → Add Project</small></div></div></td></tr>`;
+    }else{
+      tb.innerHTML=pe.map(([id,p])=>{
+        const inc=Object.values(income).filter(r=>r.project_id===id).reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+        const exp=Object.values(expenses).filter(r=>r.project_id===id).reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+        const net=inc-exp;
+        const prog=p.budget>0?Math.min(100,Math.round((inc/p.budget)*100)):0;
+        const pclr=prog>=100?'var(--green)':prog>=50?'var(--accent)':'var(--yellow)';
+        return`<tr>
+          <td class="pr">${p.name}</td>
+          <td>${p.client}</td>
+          <td class="mn">${inr(p.budget)}</td>
+          <td style="color:var(--green);font-weight:700">${inr(inc)}</td>
+          <td style="color:var(--red);font-weight:700">${inr(exp)}</td>
+          <td style="color:${net>=0?'var(--accent)':'var(--red)'};font-weight:700">${inr(net)}</td>
+          <td style="min-width:110px">
+            <div style="display:flex;align-items:center;gap:7px">
+              <div class="pbar" style="flex:1"><div class="pfill" style="width:${prog}%;background:${pclr}"></div></div>
+              <span style="font-size:11px;color:var(--text3);white-space:nowrap;font-weight:600">${prog}%</span>
+            </div>
+          </td>
+          <td>${sbadge(p.status)}</td>
+        </tr>`;
+      }).join('');
+    }
+  },
+
+  projects(){
+    const projects=S.g(K.PRJ,{});
+    const income  =S.g(K.INC,{});
+    const tb=document.getElementById('p-tbody');
+    const role=CU?.role;
+    const q=(document.getElementById('p-q')?.value||'').toLowerCase();
+    const sf=document.getElementById('p-fs')?.value||'';
+
+    const nb=document.getElementById('n-proj-ct');
+    if(nb) nb.textContent=Object.keys(projects).length;
+
+    let entries=Object.entries(projects).filter(([,p])=>{
+      const mt=!q||p.name?.toLowerCase().includes(q)||p.client?.toLowerCase().includes(q);
+      const ms=!sf||p.status===sf;
+      return mt&&ms;
+    });
+
+    const ct=document.getElementById('p-ct');
+    if(ct) ct.textContent=`${entries.length} of ${Object.keys(projects).length} projects`;
+
+    if(!entries.length){
+      tb.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-ico">${q||sf?'🔍':'📁'}</div><div class="empty-msg">${q||sf?'No projects match.':'No projects yet.'}</div></div></td></tr>`;
+      return;
+    }
+
+    tb.innerHTML=entries.map(([id,p])=>{
+      const received=Object.values(income).filter(r=>r.project_id===id).reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+      const canEdit=role!=='Viewer', canDel=role==='Admin';
+      return`<tr>
+        <td class="pr">${p.name}</td>
+        <td>${p.client}</td>
+        <td class="mn">${inr(p.budget)}</td>
+        <td style="color:var(--green);font-weight:700">${inr(received)}</td>
+        <td style="color:var(--text3)">${fdt(p.start_date)}</td>
+        <td>${sbadge(p.status)}</td>
+        <td>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            ${canEdit?`<select class="fi" style="padding:4px 8px;font-size:12px;width:120px;border-radius:7px" onchange="A.updProjStatus('${id}',this.value)">
+              <option ${p.status==='Active'?'selected':''}>Active</option>
+              <option ${p.status==='Completed'?'selected':''}>Completed</option>
+              <option ${p.status==='On Hold'?'selected':''}>${'On Hold'}</option>
+              <option ${p.status==='Cancelled'?'selected':''}>Cancelled</option>
+            </select>`:''}
+            ${canDel?`<button class="btn btn-del" onclick="A.delProject('${id}','${p.name.replace(/'/g,"\\'")}')">Delete</button>`:''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  },
+
+  income(){
+    const income  =S.g(K.INC,{});
+    const projects=S.g(K.PRJ,{});
+    const tb=document.getElementById('i-tbody');
+    const role=CU?.role;
+    const q=(document.getElementById('i-q')?.value||'').toLowerCase();
+    const pf=document.getElementById('i-fp')?.value||'';
+
+    /* Refresh filter dropdown */
+    const ifp=document.getElementById('i-fp');
+    if(ifp){
+      const cur=ifp.value;
+      ifp.innerHTML='<option value="">All Projects</option>'+
+        Object.entries(projects).map(([id,p])=>`<option value="${id}" ${cur===id?'selected':''}>${p.name}</option>`).join('');
+    }
+
+    let entries=Object.entries(income)
+      .sort((a,b)=>new Date(b[1].date)-new Date(a[1].date))
+      .filter(([,r])=>{
+        const pn=projects[r.project_id]?.name||'';
+        const mt=!q||pn.toLowerCase().includes(q)||(r.notes||'').toLowerCase().includes(q)||(r.mode||'').toLowerCase().includes(q);
+        const mp=!pf||r.project_id===pf;
+        return mt&&mp;
+      });
+
+    const total=entries.reduce((s,[,r])=>s+(parseFloat(r.amount)||0),0);
+    const tp=document.getElementById('inc-total'); if(tp) tp.textContent='Total: '+inr(total);
+    const ct=document.getElementById('i-ct'); if(ct) ct.textContent=entries.length+' entries';
+
+    if(!entries.length){
+      tb.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-ico">💰</div><div class="empty-msg">${q||pf?'No entries match.':'No income recorded yet.'}</div></div></td></tr>`;
+      return;
+    }
+
+    tb.innerHTML=entries.map(([id,r])=>{
+      const c=payClr(r.mode);
+      return`<tr>
+        <td style="color:var(--text3);white-space:nowrap">${fdt(r.date)}</td>
+        <td class="pr">${projects[r.project_id]?.name||'<em style="color:var(--text3)">Unknown</em>'}</td>
+        <td style="color:var(--green);font-weight:700;font-size:14px;font-family:'JetBrains Mono',monospace">${inr(r.amount)}</td>
+        <td><span class="badge" style="background:${c}15;color:${c};border:1px solid ${c}40">${r.mode||'—'}</span></td>
+         <td style="color:var(--text3);font-size:12.5px">${r.notes||'—'}</td>
+        <td>${role!=='Viewer'?`<button class="btn btn-del" onclick="A.delIncome('${id}')">Del</button>`:'—'}</td>
+      </tr>`;
+    }).join('');
+  },
+
+  expenses(){
+    const expenses=S.g(K.EXP,{});
+    const projects=S.g(K.PRJ,{});
+    const tb=document.getElementById('e-tbody');
+    const role=CU?.role;
+    const q=(document.getElementById('e-q')?.value||'').toLowerCase();
+    const cf=document.getElementById('e-fc')?.value||'';
+
+    let entries=Object.entries(expenses)
+      .sort((a,b)=>new Date(b[1].date)-new Date(a[1].date))
+      .filter(([,r])=>{
+        const pn=projects[r.project_id]?.name||'';
+        const mt=!q||pn.toLowerCase().includes(q)||(r.description||'').toLowerCase().includes(q)||(r.category||'').toLowerCase().includes(q);
+        const mc=!cf||r.category===cf;
+        return mt&&mc;
+      });
+
+    const total=entries.reduce((s,[,r])=>s+(parseFloat(r.amount)||0),0);
+    const tp=document.getElementById('exp-total'); if(tp) tp.textContent='Total: '+inr(total);
+    const ct=document.getElementById('e-ct'); if(ct) ct.textContent=entries.length+' entries';
+
+    if(!entries.length){
+      tb.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-ico">📦</div><div class="empty-msg">${q||cf?'No entries match.':'No expenses recorded yet.'}</div></div></td></tr>`;
+      return;
+    }
+
+    tb.innerHTML=entries.map(([id,r])=>{
+      const c=catClr(r.category);
+      return`<tr>
+        <td style="color:var(--text3);white-space:nowrap">${fdt(r.date)}</td>
+        <td class="pr">${projects[r.project_id]?.name||'<em style="color:var(--text3)">Unknown</em>'}</td>
+        <td style="color:var(--red);font-weight:700;font-size:14px;font-family:'JetBrains Mono',monospace">${inr(r.amount)}</td>
+        <td><span class="badge" style="background:${c}15;color:${c};border:1px solid ${c}40">${r.category||'—'}</span></td>
+        <td style="color:var(--text3);font-size:12.5px">${r.description||'—'}</td>
+        <td>${role!=='Viewer'?`<button class="btn btn-del" onclick="A.delExpense('${id}')">Del</button>`:'—'}</td>
+      </tr>`;
+    }).join('');
+  },
+
+  settings(){
+    const users=S.g(K.USR,{});
+    const tb=document.getElementById('u-tbody');
+    const cur=CU?.username;
+    const entries=Object.entries(users);
+    const ct=document.getElementById('u-ct'); if(ct) ct.textContent=entries.length+' users';
+
+    if(!entries.length){
+      tb.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-ico">👥</div><div class="empty-msg">No users.</div></div></td></tr>`;
+      return;
+    }
+
+    tb.innerHTML=entries.map(([uname,u])=>`
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:9px">
+            <div style="width:28px;height:28px;background:linear-gradient(135deg,#2563eb,#059669);border-radius:7px;
+              display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#fff;flex-shrink:0">
+              ${(u.name||uname).charAt(0).toUpperCase()}
+            </div>
+            <span style="font-weight:600;color:var(--text1)">${uname}</span>
+            ${uname===cur?`<span class="badge" style="background:var(--accent-l);color:var(--accent);border:1px solid var(--accent-b);font-size:10px">You</span>`:''}
+          </div>
+        </td>
+        <td style="color:var(--text2);font-weight:500">${u.name||'—'}</td>
+        <td>${rbadge(u.role)}</td>
+        <td>
+          <select class="fi" style="padding:5px 10px;font-size:12px;width:118px;border-radius:7px"
+            onchange="A.updRole('${uname}',this.value)"
+            ${uname===cur?'disabled title="Cannot change your own role"':''}>
+            <option ${u.role==='Viewer'?'selected':''}>Viewer</option>
+            <option ${u.role==='Manager'?'selected':''}>Manager</option>
+            <option ${u.role==='Admin'?'selected':''}>Admin</option>
+          </select>
+        </td>
+        <td>${uname!==cur?`<button class="btn btn-del" onclick="A.delUser('${uname}','${(u.name||uname).replace(/'/g,"\\'")}')"}>Delete</button>`:'<span style="color:var(--text3);font-size:12px">—</span>'}</td>
+      </tr>`).join('');
+  }
+};
+
+/* ─── KEYBOARD ─── */
+document.getElementById('li-p').addEventListener('keydown',e=>{ if(e.key==='Enter') Auth.login(); });
+document.getElementById('li-u').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('li-p').focus(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.mbg.open').forEach(m=>m.classList.remove('open')); });
+
+/* ─── BOOT ─── */
+(async function boot(){
+  if(Online){
+    try{
+      await FB.ensureAdmin();
+      await FB.pull();
+    }catch(e){ console.warn('Firebase boot error:',e); }
+  }
+  const ses=S.g(K.SES,null);
+  if(ses?.username){
+    CU=ses;
+    if(Online) FB.listen();
+    UI.showApp();
+  }
+  UI.qBadge();
+})();
+</script>
+</body>
+</html>
