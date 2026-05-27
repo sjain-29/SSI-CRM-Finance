@@ -935,19 +935,18 @@ const FB = {
   },
 
   async ensureAdmin() {
-    /* Always patch admin hash to match current algo — fixes stale hashes from old versions */
-    const hash = await hashPwd('admin123');
-    const rec  = { password_hash:hash, role:'Admin', name:'Administrator' };
+    /* Check if any users exist to ensure the system is initialized */
     const existing = await FB.get('users');
-    if(!existing){
-      await FB.set('users',{admin:rec});
-      S.s(K.USR,{admin:rec});
-      toast('Default admin created → admin / admin123','s',7000);
+    
+    if (!existing) {
+        console.warn('System initialization required: No users found in the database.');
+        // Optional: Redirect the user to a setup/registration page 
+        // or show a UI message indicating that an admin account needs to be created.
     } else {
-      await FB.set('users/admin',rec);
-      S.s(K.USR,{...existing,admin:rec});
+        // App handles existing users normally
+        S.s(K.USR, existing);
     }
-  },
+},
 
   listen() {
     DB.ref('projects').on('value',s=>{ if(s.exists()){ S.s(K.PRJ,s.val()); R.refresh(); }});
